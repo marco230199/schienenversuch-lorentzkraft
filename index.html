@@ -97,6 +97,9 @@
     .check { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 0.95rem; cursor: pointer; }
     .readout { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
     .readout td { padding: 3px 0; }
+    .segmented { display: flex; gap: 6px; }
+    .panel .segmented button { margin-top: 0; }
+    .panel .segmented button.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }
     .readout td:last-child { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
 
     @media (max-width: 700px) {
@@ -118,7 +121,7 @@
 
   <div class="header">
     <h1>Lorentzkraft: Leiter auf Schienen</h1>
-    <p>Etappe 4 – Winkel zwischen Feld und Strom</p>
+    <p id="subtitle"></p>
   </div>
 
   <div class="hint">
@@ -127,6 +130,13 @@
   </div>
 
   <aside class="panel">
+    <section>
+      <h2>Versuch</h2>
+      <div class="segmented" role="group" aria-label="Versuch auswählen">
+        <button id="modeBasicBtn" type="button">Grundversuch</button>
+        <button id="modeAngleBtn" type="button">Winkel α</button>
+      </div>
+    </section>
     <section>
       <h2>Netzgerät</h2>
       <button id="powerBtn" class="power" type="button">Strom einschalten</button>
@@ -141,11 +151,13 @@
       <h2>Hufeisenmagnet</h2>
       <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
       <p class="status" id="magnetStatus"></p>
-      <label class="slider">
-        <span class="row">Winkel zwischen B und I: α <output id="angleOut">90°</output></span>
-        <input id="angleSlider" type="range" min="0" max="90" step="5" value="90" />
-      </label>
-      <p class="status">90°: Feld senkrecht zur Stange · 0°: Feld parallel zur Stange</p>
+      <div id="angleControls">
+        <label class="slider">
+          <span class="row">Winkel zwischen B und I: α <output id="angleOut">90°</output></span>
+          <input id="angleSlider" type="range" min="0" max="90" step="5" value="90" />
+        </label>
+        <p class="status">90°: Feld senkrecht zur Stange · 0°: Feld parallel zur Stange</p>
+      </div>
     </section>
     <section>
       <h2>Aluminiumstange</h2>
@@ -183,41 +195,87 @@
     const RAIL_GAP = 20;          // Abstand der Schienen
     const RAIL_LEN = 60;
     const RAIL_R = 0.5;
-    const RAIL_Y = 26;            // Höhe der Schienenachse über dem Tisch (Platz für den drehbaren Magneten)
     const BAR_LEN = 30;
     const BAR_R = 0.6;
-    const BAR_Y = RAIL_Y + RAIL_R + BAR_R;
-
-    // Großer Hufeisenmagnet: die Schenkel umschließen Schienen und Stange.
-    // Er ist um die Stangenachse parallel zu den Schienen drehbar. Bei α = 90° liegen die Schenkel
-    // über und unter der Stange (Feld senkrecht), bei α = 0° stehen sie vor und hinter der Stange (Feld parallel).
-    const MAG_GAP_HALF = 16;      // Abstand der Polfläche von der Drehachse
-    const MAG_THICK = 4;          // Dicke der Schenkel
-    const MAG_WIDTH = 20;         // Ausdehnung entlang der Schienen
-    const LEG_Z_MIN = -12;        // Schenkel beginnen hinter der hinteren Schiene ...
-    const LEG_Z_MAX = 14;         // ... und enden vor der vorderen Schiene
     const I_MAX = 10;             // maximale Stromstärke des Netzgeräts in A
 
+    // Kleiner Hufeisenmagnet (Grundversuch): liegt auf der Seite zwischen den Schienen,
+    // Schenkel entlang der Schienen, ein Pol über, einer unter der Stange
+    const SMALL = {
+      OUTER_R: 6.3,               // Außenradius des Bogens
+      INNER_R: 2.3,               // Innenradius des Bogens
+      ARM_LEN: 30,
+      DEPTH: 8,                   // Breite der Schenkel (quer zu den Schienen)
+      X: 14,                      // x-Position des Bogenmittelpunkts
+    };
+
+    // Großer Hufeisenmagnet (Winkelversuch): die Schenkel umschließen Schienen und Stange.
+    // Er ist um die Stangenachse parallel zu den Schienen drehbar. Bei α = 90° liegen die Schenkel
+    // über und unter der Stange (Feld senkrecht), bei α = 0° stehen sie vor und hinter der Stange (Feld parallel).
+    const LARGE = {
+      GAP_HALF: 16,               // Abstand der Polfläche von der Drehachse
+      THICK: 4,                   // Dicke der Schenkel
+      WIDTH: 20,                  // Ausdehnung entlang der Schienen
+      LEG_Z_MIN: -12,             // Schenkel beginnen hinter der hinteren Schiene ...
+      LEG_Z_MAX: 14,              // ... und enden vor der vorderen Schiene
+    };
+
     // Physikalische Modellgrößen (SI-Einheiten)
-    const B_FIELD = 0.04;                         // Flussdichte zwischen den Polen in T
-    const L_IN_FIELD = RAIL_GAP / 100;            // stromdurchflossene Länge (Schiene bis Schiene) in m
     const BAR_MASS = 2700 * Math.PI * 0.006 ** 2 * 0.30;   // Aluminium, r = 6 mm, l = 30 cm → ca. 92 g
     const ROLL_FACTOR = 1.5;                      // rollender Vollzylinder: a = F / (1,5 · m)
     const ROLL_DECEL = 0.05;                      // Bremsung durch Rollreibung in m/s²
     const FRINGE = 2;                             // Randfeld: Abfall auf 0 über 2 cm hinter dem Polende
+    const BOUNCE = 0.15;                          // Rückprall am Anschlag (Anteil der Geschwindigkeit)
     const BAR_START_X = 0;
+    const RAIL_END_STOP = RAIL_LEN / 2 + 0.6 - 1 - BAR_R;   // Anschlag an den Klemmen der Schienenenden
+
+    // Die beiden Versuchsaufbauten
+    const SETUPS = {
+      basic: {
+        title: 'Grundversuch',
+        railY: 5.5,                               // Höhe der Schienenachse über dem Tisch
+        bField: 0.1,                              // Flussdichte zwischen den Polen in T
+        lInField: SMALL.DEPTH / 100,              // Länge der Stange im Feld (= Breite der Pole) in m
+        fieldXMin: SMALL.X - SMALL.ARM_LEN,       // freies Ende der Schenkel
+        fieldXMax: SMALL.X + SMALL.INNER_R,       // Innenseite des Bogens
+        rotatable: false,
+        camPos: [-52, 44, 96],
+        camTarget: [-4, 4, -14],
+      },
+      angle: {
+        title: 'Winkel zwischen Feld und Strom',
+        railY: 26,                                // höher, damit sich der große Magnet drehen kann
+        bField: 0.04,
+        lInField: RAIL_GAP / 100,                 // stromdurchflossene Länge (Schiene bis Schiene)
+        fieldXMin: -LARGE.WIDTH / 2,
+        fieldXMax: LARGE.WIDTH / 2,
+        rotatable: true,
+        camPos: [-66, 62, 112],
+        camTarget: [-6, 14, -12],
+      },
+    };
+    const barHeight = setup => setup.railY + RAIL_R + BAR_R;
+
+    // Anschläge der Stange: links die Klemmen; rechts die Klemmen bzw. der Bogen des kleinen Magneten
+    function barLimits(setup) {
+      if (setup.rotatable) return [-RAIL_END_STOP, RAIL_END_STOP];
+      const dy = barHeight(setup) - SMALL.OUTER_R;
+      return [-RAIL_END_STOP, SMALL.X + Math.sqrt(SMALL.INNER_R ** 2 - dy ** 2) - BAR_R];
+    }
 
     // ------------------------------------------------------------------
-    // Zustand des Versuchs (wird in Etappe 3 für die Bewegung genutzt)
+    // Zustand des Versuchs
     // ------------------------------------------------------------------
     const state = {
+      mode: 'basic',   // 'basic' (Grundversuch) oder 'angle' (Winkelversuch)
       powerOn: false,
       current: 4,      // eingestellte Stromstärke in A
       polarity: 1,     // +1: Plus an vorderer Schiene, −1: Plus an hinterer Schiene
-      northUp: true,   // Nordpol oben, Südpol unten (in Grundstellung α = 90°)
+      northUp: true,   // Nordpol oben, Südpol unten (beim Winkelversuch in Grundstellung α = 90°)
       angle: 90,       // eingestellter Winkel α zwischen Feld und Strom in Grad
       friction: true,
     };
+    const currentSetup = () => SETUPS[state.mode];
 
     // ------------------------------------------------------------------
     // Renderer, Szene, Kamera
@@ -237,21 +295,17 @@
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
     const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 1000);
-    const DEFAULT_CAM = new THREE.Vector3(-66, 62, 112);
-    const DEFAULT_TARGET = new THREE.Vector3(-6, 14, -12);
-    camera.position.copy(DEFAULT_CAM);
-
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.copy(DEFAULT_TARGET);
     controls.enableDamping = true;
     controls.maxPolarAngle = Math.PI * 0.49;
     controls.minDistance = 25;
     controls.maxDistance = 220;
 
-    document.getElementById('resetView').addEventListener('click', () => {
-      camera.position.copy(DEFAULT_CAM);
-      controls.target.copy(DEFAULT_TARGET);
-    });
+    function resetView() {
+      camera.position.set(...currentSetup().camPos);
+      controls.target.set(...currentSetup().camTarget);
+    }
+    document.getElementById('resetView').addEventListener('click', resetView);
 
     scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7a66, 0.8));
     const sun = new THREE.DirectionalLight(0xffffff, 1.8);
@@ -298,6 +352,15 @@
       return new THREE.Mesh(new THREE.PlaneGeometry(size, size), material);
     }
 
+    // Geometrien (und eigene Materialien der Beschriftungen) eines entfernten Aufbaus freigeben
+    function disposeObject(root) {
+      root.traverse(obj => {
+        if (!obj.isMesh) return;
+        obj.geometry.dispose();
+        if (obj.material.isMeshBasicMaterial) obj.material.dispose();
+      });
+    }
+
     // ------------------------------------------------------------------
     // Materialien
     // ------------------------------------------------------------------
@@ -315,6 +378,7 @@
       cableRed: new THREE.MeshStandardMaterial({ color: 0xc62828, roughness: 0.5 }),
       cableBlue: new THREE.MeshStandardMaterial({ color: 0x1e5bc6, roughness: 0.5 }),
       clamp: new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.5, roughness: 0.4 }),
+      stripe: new THREE.MeshStandardMaterial({ color: 0x4a5058, roughness: 0.5 }),
     };
 
     // ------------------------------------------------------------------
@@ -324,88 +388,147 @@
     table.position.set(-10, -2, -10);
 
     // ------------------------------------------------------------------
-    // Schienen (Messing, nicht magnetisch) auf zwei Holzklötzen
+    // Versuchsaufbau: Schienen, Stange und Magnet – wird beim Wechsel des Versuchs neu erzeugt
     // ------------------------------------------------------------------
-    const rails = [];
-    for (const z of [-RAIL_GAP / 2, RAIL_GAP / 2]) {
-      const rail = addMesh(new THREE.CylinderGeometry(RAIL_R, RAIL_R, RAIL_LEN, 24), mat.brass);
-      rail.rotation.z = Math.PI / 2;
-      rail.position.set(0, RAIL_Y, z);
-      rails.push(rail);
+    let apparatus = null;   // { group, bar, magnet, upperArm, lowerArm, upperLabels, lowerLabels }
 
-      // Anschlussklemme am linken Schienenende (Seite des Netzgeräts), Endanschlag rechts
-      for (const side of [-1, 1]) {
-        const clamp = addMesh(new THREE.BoxGeometry(2, 2, 2), mat.clamp);
-        clamp.position.set(side * (RAIL_LEN / 2 + 0.6), RAIL_Y, z);
+    function buildApparatus() {
+      if (apparatus) {
+        scene.remove(apparatus.group);
+        disposeObject(apparatus.group);
       }
-    }
-    const blockHeight = RAIL_Y - RAIL_R;
-    for (const x of [-RAIL_LEN / 2 + 3, RAIL_LEN / 2 - 3]) {
-      const block = addMesh(new THREE.BoxGeometry(4, blockHeight, RAIL_GAP + 8), mat.wood);
-      block.position.set(x, blockHeight / 2, 0);
-    }
+      const setup = currentSetup();
+      const group = new THREE.Group();
+      scene.add(group);
 
-    // ------------------------------------------------------------------
-    // Aluminiumstange quer über den Schienen
-    // ------------------------------------------------------------------
-    const barGeometry = new THREE.CylinderGeometry(BAR_R, BAR_R, BAR_LEN, 32);
-    barGeometry.rotateX(Math.PI / 2);
-    const bar = addMesh(barGeometry, mat.aluminium);
-    bar.position.set(BAR_START_X, BAR_Y, 0);
-    // dunkler Längsstreifen, damit man das Rollen sieht
-    const barStripe = addMesh(new THREE.BoxGeometry(0.2, 0.08, BAR_LEN - 0.4),
-      new THREE.MeshStandardMaterial({ color: 0x4a5058, roughness: 0.5 }), bar);
-    barStripe.position.y = BAR_R - 0.02;
-
-    // ------------------------------------------------------------------
-    // Großer Hufeisenmagnet, drehbar um die Achse der Stangenbahn
-    // ------------------------------------------------------------------
-    const magnet = new THREE.Group();
-    magnet.position.set(0, BAR_Y, 0);   // Drehachse verläuft entlang der Schienen durch die Stangenmitte
-    scene.add(magnet);
-    const legOffset = MAG_GAP_HALF + MAG_THICK / 2;
-    const legLength = LEG_Z_MAX - LEG_Z_MIN;
-
-    // Bogen als extrudierter Halbring hinter der hinteren Schiene
-    // (Form in der z-y-Ebene, wird anschließend entlang der Schienen extrudiert)
-    const outerR = MAG_GAP_HALF + MAG_THICK;
-    const yokeShape = new THREE.Shape();
-    yokeShape.moveTo(LEG_Z_MIN, outerR);
-    yokeShape.absarc(LEG_Z_MIN, 0, outerR, Math.PI / 2, Math.PI * 1.5, false);
-    yokeShape.lineTo(LEG_Z_MIN, -MAG_GAP_HALF);
-    yokeShape.absarc(LEG_Z_MIN, 0, MAG_GAP_HALF, Math.PI * 1.5, Math.PI / 2, true);
-    yokeShape.closePath();
-    const yokeGeometry = new THREE.ExtrudeGeometry(yokeShape, { depth: MAG_WIDTH, bevelEnabled: false, curveSegments: 48 });
-    yokeGeometry.translate(0, 0, -MAG_WIDTH / 2);
-    yokeGeometry.rotateY(-Math.PI / 2);   // Formebene → z-y-Ebene, Extrusion → entlang x
-    addMesh(yokeGeometry, mat.yoke, magnet);
-
-    // Schenkel: in Grundstellung oben Nordpol (rot), unten Südpol (grün)
-    const armGeometry = new THREE.BoxGeometry(MAG_WIDTH, MAG_THICK, legLength);
-    const upperArm = addMesh(armGeometry, mat.north, magnet);
-    upperArm.position.set(0, legOffset, (LEG_Z_MIN + LEG_Z_MAX) / 2);
-    const lowerArm = addMesh(armGeometry, mat.south, magnet);
-    lowerArm.position.set(0, -legOffset, (LEG_Z_MIN + LEG_Z_MAX) / 2);
-
-    // Polbeschriftungen: Stirnseite, beide Seitenflächen und Außenfläche des oberen Schenkels
-    const upperLabels = [];
-    const lowerLabels = [];
-    for (const [arm, list, sign] of [[upperArm, upperLabels, 1], [lowerArm, lowerLabels, -1]]) {
-      const front = makeLabel('N', 3.6);
-      front.position.set(0, sign * legOffset, LEG_Z_MAX + 0.02);
-      const left = makeLabel('N', 3.6);
-      left.rotation.y = -Math.PI / 2;
-      left.position.set(-MAG_WIDTH / 2 - 0.02, sign * legOffset, LEG_Z_MAX - 3);
-      const right = makeLabel('N', 3.6);
-      right.rotation.y = Math.PI / 2;
-      right.position.set(MAG_WIDTH / 2 + 0.02, sign * legOffset, LEG_Z_MAX - 3);
-      const outer = makeLabel('N', 6);
-      outer.rotation.x = -sign * Math.PI / 2;
-      outer.position.set(0, sign * (legOffset + MAG_THICK / 2 + 0.02), LEG_Z_MAX - 5);
-      for (const label of [front, left, right, outer]) {
-        magnet.add(label);
-        list.push(label);
+      // Schienen (Messing, nicht magnetisch) mit Klemmen an beiden Enden
+      for (const z of [-RAIL_GAP / 2, RAIL_GAP / 2]) {
+        const rail = addMesh(new THREE.CylinderGeometry(RAIL_R, RAIL_R, RAIL_LEN, 24), mat.brass, group);
+        rail.rotation.z = Math.PI / 2;
+        rail.position.set(0, setup.railY, z);
+        for (const side of [-1, 1]) {
+          const clamp = addMesh(new THREE.BoxGeometry(2, 2, 2), mat.clamp, group);
+          clamp.position.set(side * (RAIL_LEN / 2 + 0.6), setup.railY, z);
+        }
       }
+      // Holzklötze unter den Schienenenden
+      const blockHeight = setup.railY - RAIL_R;
+      for (const x of [-RAIL_LEN / 2 + 3, RAIL_LEN / 2 - 3]) {
+        const block = addMesh(new THREE.BoxGeometry(4, blockHeight, RAIL_GAP + 8), mat.wood, group);
+        block.position.set(x, blockHeight / 2, 0);
+      }
+
+      // Aluminiumstange quer über den Schienen
+      const barGeometry = new THREE.CylinderGeometry(BAR_R, BAR_R, BAR_LEN, 32);
+      barGeometry.rotateX(Math.PI / 2);
+      const bar = addMesh(barGeometry, mat.aluminium, group);
+      bar.position.set(BAR_START_X, barHeight(setup), 0);
+      // dunkler Längsstreifen, damit man das Rollen sieht
+      const barStripe = addMesh(new THREE.BoxGeometry(0.2, 0.08, BAR_LEN - 0.4), mat.stripe, bar);
+      barStripe.position.y = BAR_R - 0.02;
+
+      const magnetParts = setup.rotatable ? buildLargeMagnet(group, barHeight(setup)) : buildSmallMagnet(group);
+      apparatus = { group, bar, ...magnetParts };
+    }
+
+    // Kleiner Hufeisenmagnet für den Grundversuch (auf der Seite liegend, Feld senkrecht zum Tisch)
+    function buildSmallMagnet(parent) {
+      const magnet = new THREE.Group();
+      const armOffset = (SMALL.OUTER_R + SMALL.INNER_R) / 2;
+      const armThickness = SMALL.OUTER_R - SMALL.INNER_R;
+      magnet.position.set(SMALL.X, SMALL.OUTER_R, 0);
+      parent.add(magnet);
+
+      // Bogen als extrudierter Halbring
+      const yokeShape = new THREE.Shape();
+      yokeShape.moveTo(0, SMALL.OUTER_R);
+      yokeShape.absarc(0, 0, SMALL.OUTER_R, Math.PI / 2, -Math.PI / 2, true);
+      yokeShape.lineTo(0, -SMALL.INNER_R);
+      yokeShape.absarc(0, 0, SMALL.INNER_R, -Math.PI / 2, Math.PI / 2, false);
+      yokeShape.closePath();
+      const yokeGeometry = new THREE.ExtrudeGeometry(yokeShape, { depth: SMALL.DEPTH, bevelEnabled: false, curveSegments: 32 });
+      yokeGeometry.translate(0, 0, -SMALL.DEPTH / 2);
+      addMesh(yokeGeometry, mat.yoke, magnet);
+
+      // Schenkel: oben Nordpol (rot), unten Südpol (grün)
+      const armGeometry = new THREE.BoxGeometry(SMALL.ARM_LEN, armThickness, SMALL.DEPTH);
+      const upperArm = addMesh(armGeometry, mat.north, magnet);
+      upperArm.position.set(-SMALL.ARM_LEN / 2, armOffset, 0);
+      const lowerArm = addMesh(armGeometry, mat.south, magnet);
+      lowerArm.position.set(-SMALL.ARM_LEN / 2, -armOffset, 0);
+
+      // Polbeschriftungen vorne, hinten und auf der Oberseite
+      const upperLabels = [];
+      const lowerLabels = [];
+      for (const side of [1, -1]) {
+        for (const [list, sign] of [[upperLabels, 1], [lowerLabels, -1]]) {
+          const label = makeLabel('N', 3.4);
+          label.position.set(-SMALL.ARM_LEN + 3, sign * armOffset, side * (SMALL.DEPTH / 2 + 0.02));
+          if (side < 0) label.rotation.y = Math.PI;
+          magnet.add(label);
+          list.push(label);
+        }
+      }
+      const labelTop = makeLabel('N', 4.5);
+      labelTop.rotation.x = -Math.PI / 2;
+      labelTop.position.set(-SMALL.ARM_LEN + 4, armOffset + armThickness / 2 + 0.02, 0);
+      magnet.add(labelTop);
+      upperLabels.push(labelTop);
+
+      return { magnet, upperArm, lowerArm, upperLabels, lowerLabels };
+    }
+
+    // Großer Hufeisenmagnet für den Winkelversuch, drehbar um die Achse der Stangenbahn
+    function buildLargeMagnet(parent, axisY) {
+      const magnet = new THREE.Group();
+      magnet.position.set(0, axisY, 0);   // Drehachse verläuft entlang der Schienen durch die Stangenmitte
+      parent.add(magnet);
+      const legOffset = LARGE.GAP_HALF + LARGE.THICK / 2;
+      const legLength = LARGE.LEG_Z_MAX - LARGE.LEG_Z_MIN;
+
+      // Bogen als extrudierter Halbring hinter der hinteren Schiene
+      // (Form in der z-y-Ebene, wird anschließend entlang der Schienen extrudiert)
+      const outerR = LARGE.GAP_HALF + LARGE.THICK;
+      const yokeShape = new THREE.Shape();
+      yokeShape.moveTo(LARGE.LEG_Z_MIN, outerR);
+      yokeShape.absarc(LARGE.LEG_Z_MIN, 0, outerR, Math.PI / 2, Math.PI * 1.5, false);
+      yokeShape.lineTo(LARGE.LEG_Z_MIN, -LARGE.GAP_HALF);
+      yokeShape.absarc(LARGE.LEG_Z_MIN, 0, LARGE.GAP_HALF, Math.PI * 1.5, Math.PI / 2, true);
+      yokeShape.closePath();
+      const yokeGeometry = new THREE.ExtrudeGeometry(yokeShape, { depth: LARGE.WIDTH, bevelEnabled: false, curveSegments: 48 });
+      yokeGeometry.translate(0, 0, -LARGE.WIDTH / 2);
+      yokeGeometry.rotateY(-Math.PI / 2);   // Formebene → z-y-Ebene, Extrusion → entlang x
+      addMesh(yokeGeometry, mat.yoke, magnet);
+
+      // Schenkel: in Grundstellung oben Nordpol (rot), unten Südpol (grün)
+      const armGeometry = new THREE.BoxGeometry(LARGE.WIDTH, LARGE.THICK, legLength);
+      const upperArm = addMesh(armGeometry, mat.north, magnet);
+      upperArm.position.set(0, legOffset, (LARGE.LEG_Z_MIN + LARGE.LEG_Z_MAX) / 2);
+      const lowerArm = addMesh(armGeometry, mat.south, magnet);
+      lowerArm.position.set(0, -legOffset, (LARGE.LEG_Z_MIN + LARGE.LEG_Z_MAX) / 2);
+
+      // Polbeschriftungen: Stirnseite, beide Seitenflächen und Außenfläche der Schenkel
+      const upperLabels = [];
+      const lowerLabels = [];
+      for (const [list, sign] of [[upperLabels, 1], [lowerLabels, -1]]) {
+        const front = makeLabel('N', 3.6);
+        front.position.set(0, sign * legOffset, LARGE.LEG_Z_MAX + 0.02);
+        const left = makeLabel('N', 3.6);
+        left.rotation.y = -Math.PI / 2;
+        left.position.set(-LARGE.WIDTH / 2 - 0.02, sign * legOffset, LARGE.LEG_Z_MAX - 3);
+        const right = makeLabel('N', 3.6);
+        right.rotation.y = Math.PI / 2;
+        right.position.set(LARGE.WIDTH / 2 + 0.02, sign * legOffset, LARGE.LEG_Z_MAX - 3);
+        const outer = makeLabel('N', 6);
+        outer.rotation.x = -sign * Math.PI / 2;
+        outer.position.set(0, sign * (legOffset + LARGE.THICK / 2 + 0.02), LARGE.LEG_Z_MAX - 5);
+        for (const label of [front, left, right, outer]) {
+          magnet.add(label);
+          list.push(label);
+        }
+      }
+
+      return { magnet, upperArm, lowerArm, upperLabels, lowerLabels };
     }
 
     // aktueller Drehwinkel des Magneten (läuft dem eingestellten Winkel hinterher)
@@ -413,22 +536,22 @@
     function setMagnetAngle(alpha) {
       magnetAngle = alpha;
       // α = 90°: Schenkel oben/unten; α = 0°: Bogen oben, Schenkel vorne/hinten
-      magnet.rotation.x = THREE.MathUtils.degToRad(90 - alpha);
+      if (currentSetup().rotatable) apparatus.magnet.rotation.x = THREE.MathUtils.degToRad(90 - alpha);
     }
 
     // Farben und Beschriftungen passend zur Polung des Magneten
     function applyMagnetPoles() {
       const upperPole = state.northUp ? 'N' : 'S';
       const lowerPole = state.northUp ? 'S' : 'N';
-      upperArm.material = state.northUp ? mat.north : mat.south;
-      lowerArm.material = state.northUp ? mat.south : mat.north;
-      for (const label of upperLabels) label.material.map = textTexture(upperPole);
-      for (const label of lowerLabels) label.material.map = textTexture(lowerPole);
+      apparatus.upperArm.material = state.northUp ? mat.north : mat.south;
+      apparatus.lowerArm.material = state.northUp ? mat.south : mat.north;
+      for (const label of apparatus.upperLabels) label.material.map = textTexture(upperPole);
+      for (const label of apparatus.lowerLabels) label.material.map = textTexture(lowerPole);
     }
 
     // Überblenden beim Umdrehen des Magneten
     function setMagnetOpacity(opacity) {
-      magnet.traverse(obj => {
+      apparatus.magnet.traverse(obj => {
         if (!obj.isMesh) return;
         const transparent = opacity < 1 || obj.material.isMeshBasicMaterial;
         if (obj.material.transparent !== transparent) {
@@ -539,7 +662,7 @@
 
     // Polung +1: Plus (rot) an vorderer, Minus (blau) an hinterer Schiene.
     // Polung −1: Kabel an den Schienen vertauscht, das blaue Kabel liegt dabei über dem roten.
-    const CABLE_ROUTES = {
+    const cableRoutes = RAIL_Y => ({
       [1]: {
         red: [
           [-48, 0.4, -5],
@@ -572,7 +695,7 @@
           [railEndX, RAIL_Y, farZ],
         ],
       },
-    };
+    });
 
     let cables = [];
     function buildCables() {
@@ -580,7 +703,7 @@
         scene.remove(cable);
         cable.geometry.dispose();
       }
-      const route = CABLE_ROUTES[state.polarity];
+      const route = cableRoutes(currentSetup().railY)[state.polarity];
       const start = socket => [
         socket.toArray(),
         [socket.x, socket.y - 0.5, socket.z + 3],
@@ -596,6 +719,10 @@
     // Bedienfeld
     // ------------------------------------------------------------------
     const ui = {
+      subtitle: document.getElementById('subtitle'),
+      modeBasicBtn: document.getElementById('modeBasicBtn'),
+      modeAngleBtn: document.getElementById('modeAngleBtn'),
+      angleControls: document.getElementById('angleControls'),
       powerBtn: document.getElementById('powerBtn'),
       currentSlider: document.getElementById('currentSlider'),
       currentOut: document.getElementById('currentOut'),
@@ -612,6 +739,13 @@
     };
 
     function updateUi() {
+      const setup = currentSetup();
+      ui.subtitle.textContent = setup.title;
+      ui.modeBasicBtn.classList.toggle('active', state.mode === 'basic');
+      ui.modeAngleBtn.classList.toggle('active', state.mode === 'angle');
+      ui.modeBasicBtn.setAttribute('aria-pressed', state.mode === 'basic');
+      ui.modeAngleBtn.setAttribute('aria-pressed', state.mode === 'angle');
+      ui.angleControls.hidden = !setup.rotatable;
       ui.powerBtn.textContent = state.powerOn ? 'Strom ausschalten' : 'Strom einschalten';
       ui.powerBtn.classList.toggle('on', state.powerOn);
       ui.currentOut.textContent = formatAmpere(state.current);
@@ -620,7 +754,7 @@
         : 'Plus (rot) an hinterer Schiene, Minus (blau) an vorderer Schiene';
       ui.magnetStatus.textContent = (state.northUp
         ? 'Nordpol (rot) oben, Südpol (grün) unten'
-        : 'Südpol (grün) oben, Nordpol (rot) unten') + (state.angle < 90 ? ' – bei α = 90°' : '');
+        : 'Südpol (grün) oben, Nordpol (rot) unten') + (setup.rotatable && state.angle < 90 ? ' – bei α = 90°' : '');
       ui.flipBtn.disabled = flip.active;
       ui.angleOut.textContent = state.angle + '°';
     }
@@ -656,6 +790,28 @@
       Object.assign(flip, { active: true, t: 0, swapped: false });
       updateUi();
     });
+    // Versuch wechseln: Aufbau neu erzeugen, Stange und Winkel zurücksetzen
+    function setMode(mode) {
+      if (mode === state.mode) return;
+      if (flip.active) {   // laufendes Umdrehen sofort abschließen
+        if (!flip.swapped) state.northUp = !state.northUp;
+        flip.active = false;
+      }
+      state.mode = mode;
+      state.angle = 90;
+      ui.angleSlider.value = 90;
+      buildApparatus();
+      setMagnetAngle(90);
+      applyMagnetPoles();
+      setMagnetOpacity(1);
+      buildCables();
+      resetBar();
+      resetView();
+      updateUi();
+    }
+    ui.modeBasicBtn.addEventListener('click', () => setMode('basic'));
+    ui.modeAngleBtn.addEventListener('click', () => setMode('angle'));
+
     function animateFlip(dt) {
       if (!flip.active) return;
       flip.t = Math.min(flip.t + dt / FLIP_DURATION, 1);
@@ -676,20 +832,14 @@
     // ------------------------------------------------------------------
     // Bewegung der Stange durch die Lorentzkraft
     // ------------------------------------------------------------------
-    const FIELD_X_MIN = -MAG_WIDTH / 2;           // Feld zwischen den Schenkeln
-    const FIELD_X_MAX = MAG_WIDTH / 2;
-    // Anschläge: Klemmen an beiden Schienenenden
-    const BAR_X_MAX = RAIL_LEN / 2 + 0.6 - 1 - BAR_R;
-    const BAR_X_MIN = -BAR_X_MAX;
-    const BOUNCE = 0.15;                          // Rückprall am Anschlag (Anteil der Geschwindigkeit)
-
     const barMotion = { x: BAR_START_X, v: 0 };   // x in cm, v in m/s
     // Stoppuhr: startet, wenn sich die Stange aus der Ruhe bewegt, stoppt am Anschlag oder beim Liegenbleiben
     const stopwatch = { state: 'idle', t: 0 };    // idle | running | done
 
     // Anteil des Feldes am Ort x (1 zwischen den Polen, Randfeld fällt linear ab)
     function fieldFactor(x) {
-      const outside = Math.max(FIELD_X_MIN - x, x - FIELD_X_MAX, 0);
+      const setup = currentSetup();
+      const outside = Math.max(setup.fieldXMin - x, x - setup.fieldXMax, 0);
       return Math.max(0, 1 - outside / FRINGE);
     }
 
@@ -700,9 +850,11 @@
       // Feld zeigt vom Nord- zum Südpol: bei Nordpol oben und α = 90° Richtung −y.
       // Beim Drehen kippt das Feld in der y-z-Ebene: B = (0, −sin α, −cos α).
       // (−z) × B hat nur eine x-Komponente: Fx = −Polung · Feldorientierung · I · L · B · sin α
+      // (Im Grundversuch ist α immer 90°.)
+      const setup = currentSetup();
       const fieldSign = state.northUp ? 1 : -1;
       const sinAlpha = Math.sin(THREE.MathUtils.degToRad(magnetAngle));
-      return -state.polarity * fieldSign * current * L_IN_FIELD * B_FIELD * sinAlpha * fieldFactor(x);
+      return -state.polarity * fieldSign * current * setup.lInField * setup.bField * sinAlpha * fieldFactor(x);
     }
 
     function stepBar(dt) {
@@ -720,9 +872,10 @@
       // Rollreibung kann die Stange nur anhalten, nicht umkehren
       if (Math.sign(v) !== direction && Math.abs(drive) <= decel) v = 0;
 
+      const [xMin, xMax] = barLimits(currentSetup());
       let x = barMotion.x + v * 100 * dt;
-      if (x < BAR_X_MIN || x > BAR_X_MAX) {
-        x = Math.min(Math.max(x, BAR_X_MIN), BAR_X_MAX);
+      if (x < xMin || x > xMax) {
+        x = Math.min(Math.max(x, xMin), xMax);
         v = -v * BOUNCE;
         if (stopwatch.state === 'running') stopwatch.state = 'done';
         if (Math.abs(v) < 0.02) v = 0;          // kein endloses Nachzittern am Anschlag
@@ -734,8 +887,8 @@
     function updateBar(dt) {
       const SUBSTEPS = 4;
       for (let i = 0; i < SUBSTEPS; i++) stepBar(dt / SUBSTEPS);
-      bar.position.x = barMotion.x;
-      bar.rotation.z = -barMotion.x / BAR_R;     // Rollen ohne Gleiten
+      apparatus.bar.position.x = barMotion.x;
+      apparatus.bar.rotation.z = -barMotion.x / BAR_R;     // Rollen ohne Gleiten
     }
 
     // Magnet dreht sich mit 60°/s zum eingestellten Winkel
@@ -748,8 +901,9 @@
 
     const formatNumber = (value, digits) => value.toFixed(digits).replace('.', ',');
     function updateReadout() {
+      const setup = currentSetup();
       const force = state.powerOn
-        ? state.current * L_IN_FIELD * B_FIELD * Math.sin(THREE.MathUtils.degToRad(magnetAngle))
+        ? state.current * setup.lInField * setup.bField * Math.sin(THREE.MathUtils.degToRad(magnetAngle))
         : 0;
       ui.forceOut.textContent = formatNumber(force * 1000, 1) + ' mN';
       ui.speedOut.textContent = formatNumber(Math.abs(barMotion.v) * 100, 1) + ' cm/s';
@@ -757,18 +911,21 @@
         : formatNumber(stopwatch.t, 2) + ' s' + (stopwatch.state === 'running' ? ' …' : '');
     }
 
-    document.getElementById('resetBarBtn').addEventListener('click', () => {
+    function resetBar() {
       barMotion.x = BAR_START_X;
       barMotion.v = 0;
       Object.assign(stopwatch, { state: 'idle', t: 0 });
-    });
+    }
+    document.getElementById('resetBarBtn').addEventListener('click', resetBar);
 
     state.current = Number(ui.currentSlider.value);
     state.angle = Number(ui.angleSlider.value);
+    buildApparatus();
     setMagnetAngle(state.angle);
-    buildCables();
     applyMagnetPoles();
+    buildCables();
     updateSupply();
+    resetView();
     updateUi();
 
     // ------------------------------------------------------------------
