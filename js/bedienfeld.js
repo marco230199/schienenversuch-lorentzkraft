@@ -57,11 +57,11 @@ export function updateUi() {
     : 'Plus (rot) an hinterer Schiene, Minus (blau) an vorderer Schiene';
   ui.magnetStatus.textContent = (state.northUp
     ? 'Nordpol (rot) oben, Südpol (grün) unten'
-    : 'Südpol (grün) oben, Nordpol (rot) unten') + (setup.rotatable && state.angle < 90 ? ' – bei α = 90°' : '');
+    : 'Südpol (grün) oben, Nordpol (rot) unten') + (setup.rotatable && state.angle > 90 ? ' – bei α = 90°' : '');
   ui.flipBtn.disabled = flip.active;
   ui.angleOut.textContent = state.angle + '°';
   ui.handStatus.textContent = !setup.rotatable ? 'Die Lösungshand links neben dem Aufbau passt sich an Polung und Magnet an.'
-    : state.angle === 0 ? 'α = 0°: Feld parallel zur Stange – es wirkt keine Kraft, die Lösungshand wird ausgeblendet.'
+    : state.angle === 180 ? 'α = 180°: Feld parallel zur Stange – es wirkt keine Kraft, die Lösungshand wird ausgeblendet.'
     : 'Lösungshand: Der Zeigefinger zeigt in Richtung des Feldanteils senkrecht zur Stange.';
 }
 

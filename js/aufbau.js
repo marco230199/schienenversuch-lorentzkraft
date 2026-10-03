@@ -69,7 +69,7 @@ export function syncApparatus() {
     lukas.marker.position.y = lukas.zeroY + max;
     lukas.marker.visible = max > 0.2;
   });
-  // α = 90°: Schenkel oben/unten; α = 0°: Bogen oben, Schenkel vorne/hinten
+  // α = 90°: Schenkel oben/unten; α = 180°: Bogen unten, Schenkel hinten/vorne
   if (currentSetup().rotatable) apparatus.magnet.rotation.x = THREE.MathUtils.degToRad(90 - state.magnetAngle);
 }
 

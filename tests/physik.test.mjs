@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { state } from '../js/state.js';
-import { barMotion, lukasMotion, lorentzForceMagnitude, stepPhysics, resetMotion } from '../js/physik.js';
+import { barMotion, lukasMotion, lorentzForceMagnitude, lorentzForceX, stepPhysics, resetMotion } from '../js/physik.js';
 
 // Versuch einstellen und für eine gewisse Zeit laufen lassen
 function run(settings, seconds = 5) {
@@ -46,14 +46,29 @@ test('Kraft ist proportional zu sin α', () => {
   Object.assign(state, { mode: 'angle', powerOn: true, current: 4 });
   const forceAt = alpha => { state.magnetAngle = alpha; return lorentzForceMagnitude(); };
   assert.ok(Math.abs(forceAt(90) - 0.032) < 1e-9, 'F = I · l · B = 4 A · 0,2 m · 0,04 T = 32 mN');
-  assert.ok(Math.abs(forceAt(30) - forceAt(90) / 2) < 1e-9, 'bei 30° halbe Kraft');
-  assert.ok(forceAt(0) < 1e-12, 'bei 0° keine Kraft');
+  assert.ok(Math.abs(forceAt(150) - forceAt(90) / 2) < 1e-9, 'bei 150° halbe Kraft');
+  assert.ok(forceAt(180) < 1e-12, 'bei 180° keine Kraft');
 });
 
-test('Winkelversuch: Kraftmesser steigt mit dem Winkel, bei 0° passiert nichts', () => {
-  const heights = [30, 60, 90].map(angle => run({ mode: 'angle', current: 10, angle }).left);
-  assert.ok(heights[0] < heights[1] && heights[1] < heights[2], `30° < 60° < 90° (${heights.map(h => h.toFixed(1))})`);
-  const parallel = run({ mode: 'angle', current: 10, angle: 0 });
+test('Winkelversuch: Kraft bei α und 180° − α gleich (Betrag und Richtung)', () => {
+  Object.assign(state, { mode: 'angle', powerOn: true, current: 4 });
+  for (const polarity of [1, -1]) {
+    for (const northUp of [true, false]) {
+      Object.assign(state, { polarity, northUp });
+      for (let alpha = 0; alpha <= 90; alpha += 15) {
+        state.magnetAngle = alpha;
+        const before = lorentzForceX(0);
+        state.magnetAngle = 180 - alpha;
+        assert.ok(Math.abs(lorentzForceX(0) - before) < 1e-12, `α = ${alpha}°`);
+      }
+    }
+  }
+});
+
+test('Winkelversuch: Kraftmesser steigt mit dem Winkel, bei 180° passiert nichts', () => {
+  const heights = [150, 120, 90].map(angle => run({ mode: 'angle', current: 10, angle }).left);
+  assert.ok(heights[0] < heights[1] && heights[1] < heights[2], `150° < 120° < 90° (${heights.map(h => h.toFixed(1))})`);
+  const parallel = run({ mode: 'angle', current: 10, angle: 180 });
   assert.equal(parallel.x, 0);
   assert.equal(parallel.left + parallel.right, 0);
 });

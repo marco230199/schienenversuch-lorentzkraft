@@ -8,7 +8,8 @@ auf die stromdurchflossene Stange die Lorentzkraft, und die Stange rollt.
 
 - **Grundversuch:** kleiner Hufeisenmagnet, ein Pol über, einer unter der Stange
 - **Winkel α:** großer, drehbarer Hufeisenmagnet. Der Winkel zwischen Feld und Strom lässt sich
-  von 90° (maximale Kraft) bis 0° (keine Kraft) einstellen.
+  von 90° (maximale Kraft) bis 180° (keine Kraft) einstellen. Beim Drehen wandert der Bogen
+  des Magneten unter die Schienen und verdeckt die Stange nicht.
 - Strom ein/aus, Stromstärke 0–10 A, Polung umkehren, Magnet umdrehen (N ↔ S)
 - Kraftmesser („Hau den Lukas“) an beiden Schienenenden: Je stärker die Kraft, desto höher fliegt
   der Schieber. Eine Marke zeigt die größte erreichte Höhe.

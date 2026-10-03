@@ -15,7 +15,7 @@ import { scene, camera } from './szene.js';
 
 const HAND_X = -24;              // Lösungshand: neben dem Magneten, links von der Stange
 const HAND_ABOVE_BAR = 14;       // Höhe der Handfläche über der Stange
-const MIN_ANGLE = 1;             // bei α < 1° wirkt keine Kraft – Lösungshand wird ausgeblendet
+const MAX_ANGLE = 179;           // bei α > 179° wirkt keine Kraft – Lösungshand wird ausgeblendet
 
 const GUIDE_POSITION = [38, 30, -14];   // Merkhand: rechts hinter dem Schienenende, in beiden Versuchen gleich
 const GUIDE_SCALE = 0.75;
@@ -155,7 +155,7 @@ export function syncHand() {
   guide.visible = state.showHand;
   if (guide.visible) anchorTags(guide, guideTags);
 
-  solution.visible = state.showSolution && state.magnetAngle >= MIN_ANGLE;
+  solution.visible = state.showSolution && state.magnetAngle <= MAX_ANGLE;
   if (!solution.visible) return;
   solution.position.set(HAND_X, barHeight(currentSetup()) + HAND_ABOVE_BAR, 0);
 

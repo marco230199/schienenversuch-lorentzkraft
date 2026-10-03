@@ -34,7 +34,7 @@ export function lorentzForceMagnitude() {
 export function lorentzForceX(x) {
   // Strom in der Stange fließt von der Plus- zur Minus-Schiene: Richtung −z bei Polung +1
   // Feld zeigt vom Nord- zum Südpol: bei Nordpol oben und α = 90° Richtung −y.
-  // Beim Drehen kippt das Feld in der y-z-Ebene: B = (0, −sin α, −cos α).
+  // Beim Drehen kippt das Feld in der y-z-Ebene: B = (0, −sin α, −cos α) (α = 90° … 180°).
   // (−z) × B hat nur eine x-Komponente: Fx = −Polung · Feldorientierung · I · L · B · sin α
   // (Im Grundversuch ist α immer 90°.)
   const fieldSign = state.northUp ? 1 : -1;

@@ -21,8 +21,9 @@ export const SMALL = {
 };
 
 // Großer Hufeisenmagnet (Winkelversuch): die Schenkel umschließen Schienen und Stange.
-// Er ist um die Stangenachse parallel zu den Schienen drehbar. Bei α = 90° liegen die Schenkel
-// über und unter der Stange (Feld senkrecht), bei α = 0° stehen sie vor und hinter der Stange (Feld parallel).
+// Er ist um die Stangenachse parallel zu den Schienen drehbar (α = 90° … 180°). Bei α = 90° liegen die Schenkel
+// über und unter der Stange (Feld senkrecht), bei α = 180° stehen sie hinter und vor der Stange (Feld parallel),
+// der Bogen liegt dann unter den Schienen und verdeckt die Stange nicht.
 export const LARGE = {
   GAP_HALF: 16,               // Abstand der Polfläche von der Drehachse
   THICK: 4,                   // Dicke der Schenkel
@@ -67,15 +68,15 @@ export const SETUPS = {
   },
   angle: {
     title: 'Winkel zwischen Feld und Strom',
-    railY: 26,                                // höher, damit sich der große Magnet drehen kann
+    railY: 32,                                // höher, damit der Bogen des großen Magneten bei 180° über dem Tisch bleibt
     bField: 0.04,
     lInField: RAIL_GAP / 100,                 // stromdurchflossene Länge (Schiene bis Schiene)
     fieldXMin: -LARGE.WIDTH / 2,
     fieldXMax: LARGE.WIDTH / 2,
     rotatable: true,
     lukasGain: 200,                           // höher, da die Stange hier kürzer im Feld beschleunigt wird
-    camPos: [-60, 62, 112],
-    camTarget: [0, 14, -12],
+    camPos: [-60, 68, 112],
+    camTarget: [0, 20, -12],
   },
 };
 
