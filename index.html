@@ -57,6 +57,21 @@
         Die blaue Marke zeigt die größte erreichte Höhe.</p>
     </section>
     <section>
+      <h2>Drei-Finger-Regel</h2>
+      <button id="handBtn" type="button" aria-expanded="false">Hand anzeigen</button>
+      <div id="handInfo" hidden>
+        <ul class="legend">
+          <li><span class="dot" style="background:#2e7d32"></span>Daumen: Stromrichtung I (technisch, von + nach −)</li>
+          <li><span class="dot" style="background:#1565c0"></span>Zeigefinger: Richtung der Magnetfeldlinien B (von N nach S)</li>
+          <li><span class="dot" style="background:#c62828"></span>Mittelfinger: Richtung der Lorentzkraft F</li>
+        </ul>
+        <p class="status">Die Hand rechts neben dem Aufbau zeigt, wie die Finger zu halten sind.
+          Drehe deine rechte Hand so, dass sie zum Versuch passt.</p>
+      </div>
+      <button id="solutionBtn" type="button" aria-expanded="false">Lösung anzeigen</button>
+      <p class="status" id="handStatus" hidden></p>
+    </section>
+    <section>
       <h2>Messwerte</h2>
       <button id="readoutBtn" type="button" aria-expanded="false">Messwerte anzeigen</button>
       <table class="readout" id="readoutTable" hidden>

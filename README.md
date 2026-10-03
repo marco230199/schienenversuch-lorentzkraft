@@ -12,6 +12,12 @@ auf die stromdurchflossene Stange die Lorentzkraft, und die Stange rollt.
 - Strom ein/aus, Stromstärke 0–10 A, Polung umkehren, Magnet umdrehen (N ↔ S)
 - Kraftmesser („Hau den Lukas“) an beiden Schienenenden: Je stärker die Kraft, desto höher fliegt
   der Schieber. Eine Marke zeigt die größte erreichte Höhe.
+- Drei-Finger-Regel der rechten Hand, zwei Knöpfe:
+  - „Hand anzeigen“: feste Hand rechts neben dem Aufbau, die sich nie bewegt oder dreht. In den
+    Fingern sind Pfeile eingezeichnet: Stromrichtung I (grün, Daumen), Magnetfeldlinien B (blau,
+    Zeigefinger), Lorentzkraft F (rot, Mittelfinger).
+  - „Lösung anzeigen“: Hand links neben dem Aufbau, die sich nach Polung, Magnet und Winkel
+    ausrichtet und so die tatsächlichen Richtungen im Versuch zeigt.
 - Reibung zu- und abschaltbar, Messwerte (Kraft, Geschwindigkeit, Zeit) auf Knopfdruck
 - Ansicht mit Maus oder Finger drehen und zoomen, geeignet für Tablets
 
@@ -41,6 +47,7 @@ schienenversuch-lorentzkraft/
 │   ├── aufbau.js       # Schienen, Stange, Magnete, Kraftmesser (Darstellung)
 │   ├── netzgeraet.js   # Netzgerät und Kabel
 │   ├── bedienfeld.js   # Knöpfe, Regler, Anzeigen
+│   ├── hand.js         # Hand zur Drei-Finger-Regel
 │   ├── hilfen.js       # Hilfsfunktionen
 │   └── materialien.js  # gemeinsame Materialien
 ├── tests/physik.test.mjs

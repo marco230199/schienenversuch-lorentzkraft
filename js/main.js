@@ -7,6 +7,7 @@ import { stepPhysics } from './physik.js';
 import { buildApparatus, syncApparatus } from './aufbau.js';
 import { updateSupply, buildCables } from './netzgeraet.js';
 import { initUi, animateFlip, updateReadout } from './bedienfeld.js';
+import { syncHand } from './hand.js';
 
 initUi();
 buildApparatus();
@@ -20,6 +21,7 @@ renderer.setAnimationLoop(() => {
   animateFlip(dt);
   stepPhysics(dt);
   syncApparatus();
+  syncHand();
   updateReadout();
   controls.update();
   renderer.render(scene, camera);

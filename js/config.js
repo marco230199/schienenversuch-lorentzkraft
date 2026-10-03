@@ -62,8 +62,8 @@ export const SETUPS = {
     fieldXMax: SMALL.X + SMALL.INNER_R,       // Innenseite des Bogens
     rotatable: false,
     lukasGain: 120,                           // Steighöhe in cm pro (m/s)²
-    camPos: [-52, 44, 96],
-    camTarget: [-4, 4, -14],
+    camPos: [-46, 44, 96],
+    camTarget: [2, 4, -14],
   },
   angle: {
     title: 'Winkel zwischen Feld und Strom',
@@ -74,8 +74,8 @@ export const SETUPS = {
     fieldXMax: LARGE.WIDTH / 2,
     rotatable: true,
     lukasGain: 200,                           // höher, da die Stange hier kürzer im Feld beschleunigt wird
-    camPos: [-66, 62, 112],
-    camTarget: [-6, 14, -12],
+    camPos: [-60, 62, 112],
+    camTarget: [0, 14, -12],
   },
 };
 

@@ -26,6 +26,10 @@ const ui = {
   angleOut: $('angleOut'),
   resetBarBtn: $('resetBarBtn'),
   frictionCheck: $('frictionCheck'),
+  handBtn: $('handBtn'),
+  handInfo: $('handInfo'),
+  solutionBtn: $('solutionBtn'),
+  handStatus: $('handStatus'),
   readoutBtn: $('readoutBtn'),
   readoutTable: $('readoutTable'),
   forceOut: $('forceOut'),
@@ -56,6 +60,9 @@ export function updateUi() {
     : 'Südpol (grün) oben, Nordpol (rot) unten') + (setup.rotatable && state.angle < 90 ? ' – bei α = 90°' : '');
   ui.flipBtn.disabled = flip.active;
   ui.angleOut.textContent = state.angle + '°';
+  ui.handStatus.textContent = !setup.rotatable ? 'Die Lösungshand links neben dem Aufbau passt sich an Polung und Magnet an.'
+    : state.angle === 0 ? 'α = 0°: Feld parallel zur Stange – es wirkt keine Kraft, die Lösungshand wird ausgeblendet.'
+    : 'Lösungshand: Der Zeigefinger zeigt in Richtung des Feldanteils senkrecht zur Stange.';
 }
 
 // Messwerte (nur sichtbar, wenn eingeblendet)
@@ -141,6 +148,18 @@ export function initUi() {
   });
   ui.frictionCheck.addEventListener('change', () => {
     state.friction = ui.frictionCheck.checked;
+  });
+  ui.handBtn.addEventListener('click', () => {
+    state.showHand = !state.showHand;
+    ui.handInfo.hidden = !state.showHand;
+    ui.handBtn.textContent = state.showHand ? 'Hand ausblenden' : 'Hand anzeigen';
+    ui.handBtn.setAttribute('aria-expanded', state.showHand);
+  });
+  ui.solutionBtn.addEventListener('click', () => {
+    state.showSolution = !state.showSolution;
+    ui.handStatus.hidden = !state.showSolution;
+    ui.solutionBtn.textContent = state.showSolution ? 'Lösung ausblenden' : 'Lösung anzeigen';
+    ui.solutionBtn.setAttribute('aria-expanded', state.showSolution);
   });
   ui.readoutBtn.addEventListener('click', () => {
     const show = ui.readoutTable.hidden;

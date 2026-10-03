@@ -90,6 +90,9 @@ html, body {
 .check { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 0.95rem; cursor: pointer; }
 .readout { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 0.95rem; }
 .readout td { padding: 3px 0; }
+.legend { margin: 10px 0 0; padding: 0; list-style: none; font-size: 0.9rem; }
+.legend li { display: flex; gap: 8px; align-items: baseline; margin-top: 4px; }
+.legend .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
 .segmented { display: flex; gap: 6px; }
 .panel .segmented button { margin-top: 0; }
 .panel .segmented button.active { background: #1d4f91; border-color: #1d4f91; color: #fff; }

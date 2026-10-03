@@ -12,6 +12,8 @@ export const state = {
   angle: 90,          // eingestellter Winkel α zwischen Feld und Strom in Grad
   magnetAngle: 90,    // aktueller Drehwinkel des Magneten (läuft dem eingestellten Winkel hinterher)
   friction: true,
+  showHand: false,    // feste Merkhand zur Drei-Finger-Regel eingeblendet
+  showSolution: false, // mitdrehende Lösungshand eingeblendet
 };
 
 export const currentSetup = () => SETUPS[state.mode];

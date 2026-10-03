@@ -21,5 +21,6 @@ export const mat = {
   puck: new THREE.MeshStandardMaterial({ color: 0xe53935, roughness: 0.4 }),
   marker: new THREE.MeshStandardMaterial({ color: 0x1d4f91, roughness: 0.4 }),
   ledOff: new THREE.MeshStandardMaterial({ color: 0x5a1a1a, roughness: 0.4 }),
+  skin: new THREE.MeshStandardMaterial({ color: 0xe8b98f, roughness: 0.65 }),
   ledOn: new THREE.MeshStandardMaterial({ color: 0x39ff5a, emissive: 0x39ff5a, emissiveIntensity: 1.5 }),
 };
