@@ -30,6 +30,8 @@ const ui = {
   handInfo: $('handInfo'),
   solutionBtn: $('solutionBtn'),
   handStatus: $('handStatus'),
+  lukasBtn: $('lukasBtn'),
+  lukasInfo: $('lukasInfo'),
   readoutBtn: $('readoutBtn'),
   readoutTable: $('readoutTable'),
   forceOut: $('forceOut'),
@@ -148,6 +150,13 @@ export function initUi() {
   });
   ui.frictionCheck.addEventListener('change', () => {
     state.friction = ui.frictionCheck.checked;
+  });
+  ui.lukasBtn.addEventListener('click', () => {
+    state.showLukas = !state.showLukas;
+    ui.lukasInfo.hidden = !state.showLukas;
+    ui.lukasBtn.textContent = state.showLukas ? 'Kraftmesser ausblenden' : 'Kraftmesser anzeigen';
+    ui.lukasBtn.setAttribute('aria-expanded', state.showLukas);
+    syncApparatus();
   });
   ui.handBtn.addEventListener('click', () => {
     state.showHand = !state.showHand;

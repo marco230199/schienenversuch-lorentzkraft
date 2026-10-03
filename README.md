@@ -11,8 +11,8 @@ auf die stromdurchflossene Stange die Lorentzkraft, und die Stange rollt.
   von 90° (maximale Kraft) bis 180° (keine Kraft) einstellen. Beim Drehen wandert der Bogen
   des Magneten unter die Schienen und verdeckt die Stange nicht.
 - Strom ein/aus, Stromstärke 0–10 A, Polung umkehren, Magnet umdrehen (N ↔ S)
-- Kraftmesser („Hau den Lukas“) an beiden Schienenenden: Je stärker die Kraft, desto höher fliegt
-  der Schieber. Eine Marke zeigt die größte erreichte Höhe.
+- Kraftmesser („Hau den Lukas“) an beiden Schienenenden, per Knopf ein- und ausblendbar: Je stärker
+  die Kraft, desto höher fliegt der Schieber. Eine Marke zeigt die größte erreichte Höhe.
 - Drei-Finger-Regel der rechten Hand, zwei Knöpfe:
   - „Hand anzeigen“: feste Hand rechts neben dem Aufbau, die sich nie bewegt oder dreht. In den
     Fingern sind Pfeile eingezeichnet: Stromrichtung I (grün, Daumen), Magnetfeldlinien B (blau,

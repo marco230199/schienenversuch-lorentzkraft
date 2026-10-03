@@ -64,6 +64,7 @@ export function syncApparatus() {
   apparatus.bar.position.x = barMotion.x;
   apparatus.bar.rotation.z = -barMotion.x / BAR_R;     // Rollen ohne Gleiten
   apparatus.lukas.forEach((lukas, i) => {
+    lukas.tower.visible = state.showLukas;
     const { h, max } = lukasMotion[i];
     lukas.puck.position.y = lukas.zeroY + h;
     lukas.marker.position.y = lukas.zeroY + max;
@@ -156,7 +157,7 @@ function buildLukas(parent, x, barY) {
   const marker = addMesh(new THREE.BoxGeometry(6.2, 0.3, 0.3), mat.marker, tower);
   marker.position.z = 0.6;
 
-  return { puck, marker, zeroY: boardBottom + 1 };
+  return { tower, puck, marker, zeroY: boardBottom + 1 };
 }
 
 // ------------------------------------------------------------------
