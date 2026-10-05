@@ -7,7 +7,7 @@ auf die stromdurchflossene Stange die Lorentzkraft, und die Stange rollt.
 ## Funktionen
 
 - **Grundversuch:** kleiner Hufeisenmagnet, ein Pol über, einer unter der Stange
-- **Winkel α:** großer, drehbarer Hufeisenmagnet. Der Winkel zwischen Feld und Strom lässt sich
+- **Drehbarer Magnet:** großer, drehbarer Hufeisenmagnet. Der Winkel zwischen Feld und Strom lässt sich
   von 90° (maximale Kraft) bis 180° (keine Kraft) einstellen. Beim Drehen wandert der Bogen
   des Magneten unter die Schienen und verdeckt die Stange nicht.
 - Strom ein/aus, Stromstärke 0–10 A, Polung umkehren, Magnet umdrehen (N ↔ S)

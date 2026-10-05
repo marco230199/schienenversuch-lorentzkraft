@@ -67,7 +67,7 @@ export const SETUPS = {
     camTarget: [2, 4, -14],
   },
   angle: {
-    title: 'Winkel zwischen Feld und Strom',
+    title: 'Drehbarer Magnet',
     railY: 32,                                // höher, damit der Bogen des großen Magneten bei 180° über dem Tisch bleibt
     bField: 0.04,
     lInField: RAIL_GAP / 100,                 // stromdurchflossene Länge (Schiene bis Schiene)
