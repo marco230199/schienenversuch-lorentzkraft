@@ -211,7 +211,7 @@ function buildSmallMagnet(parent) {
   return { magnet, upperArm, lowerArm, upperLabels, lowerLabels };
 }
 
-// Großer Hufeisenmagnet für den Winkelversuch, drehbar um die Achse der Stangenbahn
+// Großer Hufeisenmagnet für den Versuch „Drehbarer Magnet“, drehbar um die Achse der Stangenbahn
 function buildLargeMagnet(parent, axisY) {
   const magnet = new THREE.Group();
   magnet.position.set(0, axisY, 0);   // Drehachse verläuft entlang der Schienen durch die Stangenmitte

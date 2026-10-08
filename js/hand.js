@@ -160,7 +160,7 @@ export function syncHand() {
   solution.position.set(HAND_X, barHeight(currentSetup()) + HAND_ABOVE_BAR, 0);
 
   // Strom in der Stange von der Plus- zur Minus-Schiene (vgl. physik.js).
-  // Der Zeigefinger zeigt in Richtung des Feldanteils senkrecht zur Stange (beim Winkelversuch ±y).
+  // Der Zeigefinger zeigt in Richtung des Feldanteils senkrecht zur Stange (beim drehbaren Magneten ±y).
   current.set(0, 0, -state.polarity);
   field.set(0, state.northUp ? -1 : 1, 0);
   force.crossVectors(current, field);

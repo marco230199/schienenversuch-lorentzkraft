@@ -62,7 +62,7 @@ schienenversuch-lorentzkraft/
 - Kraft entlang der Schienen: F = I · l · B · sin α. Die Richtung folgt der Drei-Finger-Regel der
   rechten Hand mit technischer Stromrichtung.
 - Grundversuch: B = 0,1 T, l = 8 cm (Breite der Pole).
-  Winkelversuch: B = 0,04 T, l = 20 cm (Schienenabstand).
+  Drehbarer Magnet: B = 0,04 T, l = 20 cm (Schienenabstand).
 - Aluminiumstange ca. 92 g, rollender Vollzylinder (a = F / 1,5 m), Rollreibung 0,02 m/s².
 - Kraftmesser: Steighöhe ∝ v² beim Aufprall, also ∝ Bewegungsenergie. Da die Stange immer etwa
   dieselbe Strecke im Feld beschleunigt wird, ist die Höhe ein qualitatives Maß für die Kraft. Die

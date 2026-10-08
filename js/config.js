@@ -20,7 +20,7 @@ export const SMALL = {
   X: 14,                      // x-Position des Bogenmittelpunkts
 };
 
-// Großer Hufeisenmagnet (Winkelversuch): die Schenkel umschließen Schienen und Stange.
+// Großer Hufeisenmagnet (drehbarer Magnet): die Schenkel umschließen Schienen und Stange.
 // Er ist um die Stangenachse parallel zu den Schienen drehbar (α = 90° … 180°). Bei α = 90° liegen die Schenkel
 // über und unter der Stange (Feld senkrecht), bei α = 180° stehen sie hinter und vor der Stange (Feld parallel),
 // der Bogen liegt dann unter den Schienen und verdeckt die Stange nicht.

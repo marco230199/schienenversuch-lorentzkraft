@@ -71,7 +71,7 @@ test('Kraft ist proportional zu sin α', () => {
   assert.ok(forceAt(180) < 1e-12, 'bei 180° keine Kraft');
 });
 
-test('Winkelversuch: Kraft bei α und 180° − α gleich (Betrag und Richtung)', () => {
+test('Drehbarer Magnet: Kraft bei α und 180° − α gleich (Betrag und Richtung)', () => {
   Object.assign(state, { mode: 'angle', powerOn: true, current: 4 });
   for (const polarity of [1, -1]) {
     for (const northUp of [true, false]) {
@@ -86,7 +86,7 @@ test('Winkelversuch: Kraft bei α und 180° − α gleich (Betrag und Richtung)'
   }
 });
 
-test('Winkelversuch: Kraftmesser steigt mit dem Winkel, bei 180° passiert nichts', () => {
+test('Drehbarer Magnet: Kraftmesser steigt mit dem Winkel, bei 180° passiert nichts', () => {
   const heights = [150, 120, 90].map(angle => run({ mode: 'angle', current: 10, angle }).left);
   assert.ok(heights[0] < heights[1] && heights[1] < heights[2], `150° < 120° < 90° (${heights.map(h => h.toFixed(1))})`);
   const parallel = run({ mode: 'angle', current: 10, angle: 180 });
