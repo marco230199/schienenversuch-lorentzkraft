@@ -2,7 +2,7 @@
 // Bedienfeld: Knöpfe, Regler und Anzeigen
 // ------------------------------------------------------------------
 import { state, currentSetup } from './state.js';
-import { barMotion, stopwatch, lorentzForceMagnitude, resetMotion } from './physik.js';
+import { barMotion, stopwatch, fieldStrength, lorentzForceMagnitude, resetMotion } from './physik.js';
 import { buildApparatus, syncApparatus, applyMagnetPoles, setMagnetOpacity } from './aufbau.js';
 import { updateSupply, buildCables } from './netzgeraet.js';
 import { resetView } from './szene.js';
@@ -21,6 +21,8 @@ const ui = {
   polarityStatus: $('polarityStatus'),
   flipBtn: $('flipBtn'),
   magnetStatus: $('magnetStatus'),
+  fieldSlider: $('fieldSlider'),
+  fieldOut: $('fieldOut'),
   angleControls: $('angleControls'),
   angleSlider: $('angleSlider'),
   angleOut: $('angleOut'),
@@ -61,6 +63,7 @@ export function updateUi() {
     ? 'Nordpol (rot) oben, Südpol (grün) unten'
     : 'Südpol (grün) oben, Nordpol (rot) unten') + (setup.rotatable && state.angle > 90 ? ' – bei α = 90°' : '');
   ui.flipBtn.disabled = flip.active;
+  ui.fieldOut.textContent = formatNumber(fieldStrength() * 1000, 0) + ' mT';
   ui.angleOut.textContent = state.angle + '°';
   ui.handStatus.textContent = !setup.rotatable ? 'Die Lösungshand links neben dem Aufbau passt sich an Polung und Magnet an.'
     : state.angle === 180 ? 'α = 180°: Feld parallel zur Stange – es wirkt keine Kraft, die Lösungshand wird ausgeblendet.'
@@ -114,6 +117,7 @@ function setMode(mode) {
 // Startwerte aus den Bedienelementen übernehmen und Ereignisse verbinden
 export function initUi() {
   state.current = Number(ui.currentSlider.value);
+  state.fieldScale = Number(ui.fieldSlider.value);
   state.angle = state.magnetAngle = Number(ui.angleSlider.value);
   state.friction = ui.frictionCheck.checked;
 
@@ -138,6 +142,10 @@ export function initUi() {
   ui.flipBtn.addEventListener('click', () => {
     if (flip.active) return;
     Object.assign(flip, { active: true, t: 0, swapped: false });
+    updateUi();
+  });
+  ui.fieldSlider.addEventListener('input', () => {
+    state.fieldScale = Number(ui.fieldSlider.value);
     updateUi();
   });
   ui.angleSlider.addEventListener('input', () => {

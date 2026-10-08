@@ -11,6 +11,8 @@ auf die stromdurchflossene Stange die Lorentzkraft, und die Stange rollt.
   von 90° (maximale Kraft) bis 180° (keine Kraft) einstellen. Beim Drehen wandert der Bogen
   des Magneten unter die Schienen und verdeckt die Stange nicht.
 - Strom ein/aus, Stromstärke 0–10 A, Polung umkehren, Magnet umdrehen (N ↔ S)
+- Magnetfeldstärke B per Schieberegler von 0 bis zum Doppelten des Normalwerts (Gedankenexperiment –
+  bei einem echten Dauermagneten ist B fest), um F ∼ B zu untersuchen
 - Kraftmesser („Hau den Lukas“) an beiden Schienenenden, per Knopf ein- und ausblendbar: Je stärker
   die Kraft, desto höher fliegt der Schieber. Eine Marke zeigt die größte erreichte Höhe.
 - Drei-Finger-Regel der rechten Hand, zwei Knöpfe:

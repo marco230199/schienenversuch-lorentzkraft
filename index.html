@@ -41,6 +41,11 @@
       <h2>Hufeisenmagnet</h2>
       <button id="flipBtn" type="button">Magnet umdrehen (N ↔ S)</button>
       <p class="status" id="magnetStatus"></p>
+      <label class="slider">
+        <span class="row">Magnetfeldstärke B <output id="fieldOut">100 mT</output></span>
+        <input id="fieldSlider" type="range" min="0" max="2" step="0.1" value="1" />
+      </label>
+      <p class="status">Gedankenexperiment: Bei einem echten Dauermagneten ist die Feldstärke fest.</p>
       <div id="angleControls">
         <label class="slider">
           <span class="row">Winkel zwischen B und I: α <output id="angleOut">90°</output></span>

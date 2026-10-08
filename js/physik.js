@@ -23,11 +23,14 @@ export function fieldFactor(x) {
   return Math.max(0, 1 - outside / FRINGE);
 }
 
+// eingestellte Flussdichte zwischen den Polen in T
+export const fieldStrength = () => currentSetup().bField * state.fieldScale;
+
 // Betrag der Lorentzkraft zwischen den Polen in N: F = I · l · B · sin α
 export function lorentzForceMagnitude() {
   const setup = currentSetup();
   const current = state.powerOn ? state.current : 0;
-  return current * setup.lInField * setup.bField * Math.sin(degToRad(state.magnetAngle));
+  return current * setup.lInField * fieldStrength() * Math.sin(degToRad(state.magnetAngle));
 }
 
 // Kraft in x-Richtung (entlang der Schienen), F = I · L × B
